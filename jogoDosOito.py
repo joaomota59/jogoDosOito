@@ -96,7 +96,7 @@ def buscaEmProfundidade(mat):#incompleto
     
 def buscaEmLargura(mat):#incompleto
     return
-def BuscaHeuristica(mat):#incompleto
+def buscaHeuristica(mat):#incompleto
     return
 def A(mat):#incompleto
     return
@@ -104,6 +104,7 @@ def A(mat):#incompleto
 def start():
     matrix = [[entrada.get(),entrada2.get(),entrada3.get()],[entrada4.get(),entrada5.get(),entrada6.get()],[entrada7.get(),entrada8.get(),entrada9.get()]]
     #print(matrix)
+    print(escolha.get())
     print("Aguarde o resultado final!\n")
     if(str(escolha.get())=='profundidade'):
         buscaEmProfundidade(matrix)
@@ -112,7 +113,7 @@ def start():
     elif(str(escolha.get())=='heuristica'):
         buscaHeuristica(matrix)
     elif(str(escolha.get())=='A'):
-        A(mat)
+        A(matrix)
         
     
 
@@ -126,35 +127,37 @@ mensagem = Label(window, text="Insira o estado Inicial", font="impact 20 bold")
 mensagem.pack()
 jogoDosOito = Frame(window)
 jogoDosOito.pack()
-entrada = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada.grid(row=0,column=0)
-entrada2 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada2 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada2.grid(row=0,column=1)
-entrada3 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada3 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada3.grid(row=0,column=2)
-entrada4 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada4 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada4.grid(row=1,column=0)
-entrada5 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada5 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada5.grid(row=1,column=1)
-entrada6 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada6 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada6.grid(row=1,column=2)
-entrada7 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada7 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada7.grid(row=2,column=0)
-entrada8 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada8 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada8.grid(row=2,column=1)
-entrada9 = Entry(jogoDosOito, font="arial 15 bold",width=5)
+entrada9 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
 entrada9.grid(row=2,column=2)
 
 #radioButtons:
 escolha = StringVar()#Guarda o valor escolhido
-escolha1 = Radiobutton(window,text='Busca em Profundidade', value='profundidade', tristatevalue=0,variable = escolha)
-escolha2= Radiobutton(window,text='Busca em Largura', value='largura', tristatevalue=0,variable = escolha)
-escolha3 = Radiobutton(window,text='Busca Heurística', value='heuristica', tristatevalue=0,variable = escolha)
-escolha4 = Radiobutton(window,text='Busca A*', value='A', tristatevalue=0,variable = escolha)
-escolha1.pack()
-escolha2.pack()
-escolha3.pack()
-escolha4.pack()
+#tristatevalue=0
+escolha.set(1)
+escolha1 = ttk.Radiobutton(window,text='Busca em Profundidade', value='profundidade' ,cursor="hand2",variable = escolha)
+escolha2= ttk.Radiobutton(window,text='Busca em Largura', value='largura', cursor="hand2",variable = escolha)
+escolha3 = ttk.Radiobutton(window,text='Busca Heurística', value='heuristica', cursor="hand2",variable = escolha)
+escolha4 = ttk.Radiobutton(window,text='Busca A*', value='A', cursor="hand2",variable = escolha)
+escolha1.pack(padx=(0,0))
+escolha2.pack(padx=(0,33))
+escolha3.pack(padx=(0,39))
+escolha4.pack(padx=(0,79))
 botao = ttk.Button(window, text="Começar", command=start,cursor="hand2")
 botao.pack()
 
