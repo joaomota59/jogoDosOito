@@ -47,7 +47,12 @@ def filhosPossiveis(matrix): #retorna todos os filhos possiveis do estado em bra
         NosFilhos.append(d)
     return NosFilhos
 
-def mostraArvore(arestas=[]):
+def mostraArvore(arestas=[]):#passa todos as arestas para exibir a árvore
+    for i in range(len(arestas)):
+        arestas[i] = list(arestas[i])
+        arestas[i][0] = arestas[i][0].replace("], [","\n").replace("[","").replace("]","")
+        arestas[i][1] = arestas[i][1].replace("], [","\n").replace("[","").replace("]","")
+        arestas[i] = tuple(arestas[i])
     t = Tree.from_parent_child_table(arestas)
     ts = TreeStyle()
     ts.show_leaf_name = False
@@ -73,8 +78,8 @@ def buscaEmProfundidade(mat):#incompleto
         if(np.array_equal(mat,[['1','2','3'],['4','5','6'],['7','8','']])): #Compara a matriz atual com a matriz de estado final
             print("ACHOU A SOLUÇÃO")
             print("Quantidade na Pilha:",len(noNaoVisitado))
-            print(arvore.arestas[0])
-            break
+            #print(arvore.arestas[0])
+            return
         for i in filhosPossiveis(mat)[::-1]:#percore os nós filhos de trás para frente
             try:
                 arvore.dicio[str(i)] #verifica se o filho está no dicionário
@@ -82,10 +87,9 @@ def buscaEmProfundidade(mat):#incompleto
                 arvore.criaAresta(arvore.dicio[str(pai)],i)
                 noNaoVisitado.append(i)#add todos nós filhos
         if len(noNaoVisitado)==100: #mostra a arvore quando tem 100 nós na pilha
-            print(arvore.arestas[0])
             mostraArvore(arvore.arestas)
-            break
         #print(arvore.arestas[0])
+    raise OverflowError
     
     
     
@@ -99,6 +103,7 @@ def A(mat):#incompleto
 def start():
     matrix = [[entrada.get(),entrada2.get(),entrada3.get()],[entrada4.get(),entrada5.get(),entrada6.get()],[entrada7.get(),entrada8.get(),entrada9.get()]]
     #print(matrix)
+    print("Aguarde o resultado final!\n")
     if(str(escolha.get())=='profundidade'):
         buscaEmProfundidade(matrix)
     elif(str(escolha.get())=='largura'):
