@@ -2,6 +2,7 @@
 from pptree import *
 import numpy as np
 from tkinter import * #importamos o pacote tkinter
+import tkinter.ttk as ttk
 from copy import deepcopy
 from ete3 import Tree, TreeStyle, Tree, TextFace, add_face_to_node
 
@@ -154,7 +155,7 @@ escolha1.pack()
 escolha2.pack()
 escolha3.pack()
 escolha4.pack()
-botao = Button(window, text="Começar", command=start)
+botao = ttk.Button(window, text="Começar", command=start,cursor="hand2")
 botao.pack()
 
 window.mainloop()
