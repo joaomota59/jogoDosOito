@@ -67,34 +67,50 @@ def mostraArvore(arestas=[]):#passa todos as arestas para exibir a árvore
     t.show(tree_style=ts)#mostra árvore
 
 
-def buscaEmProfundidade(mat):#incompleto
+def buscaEmProfundidade(mat):#Completo (guardando estados visitados)
     arvore = Arvore(mat) #Instancia a classe e já cria o nó raiz
     noNaoVisitado = [mat] #pilha já começa com o nó raiz
-    while(len(noNaoVisitado)>0):
+    flag = False #flag para exibir a árvore só uma vez
+    while(len(noNaoVisitado)>0): #Enquanto tiver nós na pilha
         pai = noNaoVisitado.pop()#viu que matriz não era solução então tira da pilha
         mat = pai
-        #for i in pai: #printa o nó em que o algoritmo está no momento
+        #for i in pai: #printa o nó(pai) em que o algoritmo está no momento
         #    print(i)
         #print("\n\n")
-        if(np.array_equal(mat,[['1','2','3'],['4','5','6'],['7','8','']])): #Compara a matriz atual com a matriz de estado final
+        if(np.array_equal(mat,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
             print("ACHOU A SOLUÇÃO")
             print("Quantidade na Pilha:",len(noNaoVisitado))
-            #print(arvore.arestas[0])
+            print("Quant de nós visitados",len(arvore.dicio))
+            if not(flag):#se a árvore ainda não foi exibida
+                mostraArvore(arvore.arestas)
             return
         for i in filhosPossiveis(mat)[::-1]:#percore os nós filhos de trás para frente
             try:
                 arvore.dicio[str(i)] #verifica se o filho está no dicionário
-            except:#se não tiver no dicionario(filho visitado) então adiciona ao dicionario
+            except KeyError:#se não tiver no dicionario(filho visitado) então adiciona ao dicionario
                 arvore.criaAresta(arvore.dicio[str(pai)],i)
-                noNaoVisitado.append(i)#add todos nós filhos
-        if len(noNaoVisitado)==100: #mostra a arvore quando tem 100 nós na pilha
-            mostraArvore(arvore.arestas)
-        #print(arvore.arestas[0])
-    raise OverflowError
+                noNaoVisitado.append(i)#add todos nós filhos    
+            if len(noNaoVisitado)==250 and flag==False: #mostra a arvore quando tem 250 nós na pilha
+                flag=True
+                mostraArvore(arvore.arestas)
+            if len(noNaoVisitado)>=42000:#se der mais de 42.000 nós na pilha já gera exception pois o programa vai travar e fechar
+                raise OverflowError
+                return
     
     
     
 def buscaEmLargura(mat):#incompleto
+    arvore = Arvore(mat) #Instancia a classe e já cria o nó raiz
+    noNaoVisitado = [mat] #pilha já começa com o nó raiz
+    flag = False #exibe a árvore só uma vez
+    while(len(noNaoVisitado)>0):
+        if(np.array_equal(mat,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
+            print("ACHOU A SOLUÇÃO")
+            print("Quantidade na Pilha:",len(noNaoVisitado))
+            print("Quant de nós visitados",len(arvore.dicio))
+            if not(flag):#se a árvore ainda não foi exibida
+                mostraArvore(arvore.arestas)
+            return     
     return
 def buscaHeuristica(mat):#incompleto
     return
@@ -103,8 +119,6 @@ def A(mat):#incompleto
 
 def start():
     matrix = [[entrada.get(),entrada2.get(),entrada3.get()],[entrada4.get(),entrada5.get(),entrada6.get()],[entrada7.get(),entrada8.get(),entrada9.get()]]
-    #print(matrix)
-    print(escolha.get())
     print("Aguarde o resultado final!\n")
     if(str(escolha.get())=='profundidade'):
         buscaEmProfundidade(matrix)
@@ -148,7 +162,6 @@ entrada9.grid(row=2,column=2)
 
 #radioButtons:
 escolha = StringVar()#Guarda o valor escolhido
-#tristatevalue=0
 escolha.set(1)
 escolha1 = ttk.Radiobutton(window,text='Busca em Profundidade', value='profundidade' ,cursor="hand2",variable = escolha)
 escolha2= ttk.Radiobutton(window,text='Busca em Largura', value='largura', cursor="hand2",variable = escolha)
