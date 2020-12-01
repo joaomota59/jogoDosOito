@@ -5,6 +5,9 @@ from tkinter import * #importamos o pacote tkinter
 import tkinter.ttk as ttk
 from copy import deepcopy
 from ete3 import Tree, TreeStyle, Tree, TextFace, add_face_to_node
+import time
+from threading import Thread
+
 
 ##Funções e Classes##
 
@@ -67,16 +70,37 @@ def mostraArvore(arestas=[]):#passa todos as arestas para exibir a árvore
     t.show(tree_style=ts)#mostra árvore
 
 
+def matrizNaTelaUpdate(mat):
+    entrada.delete(0, END) #deleta o valor atual da entrada
+    entrada2.delete(0, END) #deleta o valor atual da entrada
+    entrada3.delete(0, END) #deleta o valor atual da entrada
+    entrada4.delete(0, END) #deleta o valor atual da entrada
+    entrada5.delete(0, END) #deleta o valor atual da entrada
+    entrada6.delete(0, END) #deleta o valor atual da entrada
+    entrada7.delete(0, END) #deleta o valor atual da entrada
+    entrada8.delete(0, END) #deleta o valor atual da entrada
+    entrada9.delete(0, END) #deleta o valor atual da entrada
+    entrada.insert(0,mat[0][0])
+    entrada2.insert(0,mat[0][1])
+    entrada3.insert(0,mat[0][2])
+    entrada4.insert(0,mat[1][0])
+    entrada5.insert(0,mat[1][1])
+    entrada6.insert(0,mat[1][2])
+    entrada7.insert(0,mat[2][0])
+    entrada8.insert(0,mat[2][1])
+    entrada9.insert(0,mat[2][2])
+    time.sleep(2)#para o programa nessa linha por 1,5 segundos
+
 def buscaEmProfundidade(mat):#Completo (guardando estados visitados)
     arvore = Arvore(mat) #Instancia a classe e já cria o nó raiz
     noNaoVisitado = [mat] #pilha já começa com o nó raiz
     flag = False #flag para exibir a árvore só uma vez
     while(len(noNaoVisitado)>0): #Enquanto tiver nós na pilha
-        pai = noNaoVisitado.pop()#viu que matriz não era solução então tira da pilha
-        mat = pai
         #for i in pai: #printa o nó(pai) em que o algoritmo está no momento
         #    print(i)
         #print("\n\n")
+        pai = noNaoVisitado.pop()#viu que matriz não era solução então tira da pilha
+        mat = pai
         if(np.array_equal(mat,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
             print("ACHOU A SOLUÇÃO")
             print("Quantidade na Pilha:",len(noNaoVisitado))
@@ -96,9 +120,7 @@ def buscaEmProfundidade(mat):#Completo (guardando estados visitados)
             if len(noNaoVisitado)>=42000:#se der mais de 42.000 nós na pilha já gera exception pois o programa vai travar e fechar
                 raise OverflowError
                 return
-    
-    
-    
+        matrizNaTelaUpdate(mat)
 def buscaEmLargura(mat):#incompleto
     arvore = Arvore(mat) #Instancia a classe e já cria o nó raiz
     noNaoVisitado = [mat] #pilha já começa com o nó raiz
@@ -121,7 +143,11 @@ def start():
     matrix = [[entrada.get(),entrada2.get(),entrada3.get()],[entrada4.get(),entrada5.get(),entrada6.get()],[entrada7.get(),entrada8.get(),entrada9.get()]]
     print("Aguarde o resultado final!\n")
     if(str(escolha.get())=='profundidade'):
-        buscaEmProfundidade(matrix)
+        try:
+            w=Thread(target=buscaEmProfundidade,args=(matrix,))#passa os parametros e a função para a thread
+            w.start()
+        except:
+            pass
     elif(str(escolha.get())=='largura'):
         buscaEmLargura(matrix)
     elif(str(escolha.get())=='heuristica'):
@@ -173,7 +199,6 @@ escolha3.pack(padx=(0,39))
 escolha4.pack(padx=(0,79))
 botao = ttk.Button(window, text="Começar", command=start,cursor="hand2")
 botao.pack()
-
 window.mainloop()
 
 
