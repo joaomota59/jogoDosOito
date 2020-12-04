@@ -8,14 +8,14 @@ from ete3 import Tree, TreeStyle, Tree, TextFace, add_face_to_node
 import time
 import threading
 from threading import Thread
-from random import shuffle
+import random
 
 ##Funções##
 
 class Arvore: #classe para exibir a arvore
     def __init__(self):
         pass
-    def stringArvore(self,listaFilhos=[],pai="",kw=""):#retorna a árvore em uma string 
+    def stringArvore(self,listaFilhos=[],pai="",kw="",tipo='profundidade'):#retorna a árvore em uma string 
          aux="("#abre para fazer a tupla de filhos
          for i in listaFilhos:
               aux+= str(i).replace("], [","*").replace("[","").replace("]","").replace(",",' ')+"," #colocar estrela pois não dá crto se colocar \n quando passar na instância Tree()
@@ -23,11 +23,24 @@ class Arvore: #classe para exibir a arvore
          aux+=")"
          pai = pai.replace("], [","*").replace("[","").replace("]","").replace(",",' ')
          if kw=="": #se for o nó raiz e seus filhos
-              return aux+pai+";"    
-         posPai = kw.find(pai)
-         return kw[:posPai] +aux+ kw[posPai:] #escreve os filhos na string pai correspondente
+              return aux+pai+";"
+         posPai = -1 #possição do nó pai na durante a busca(valor default - poderia ser qualquer num)
+         if tipo == 'profundidade':
+             posPai = kw.index(pai)#procura pelo começo o pai na string
+         elif tipo == 'largura':
+             posPai = self.posString(pai,kw) 
+         return kw[:posPai] +aux+ kw[posPai:]#escreve os filhos na string do pai correspondente
 
-
+    def posString(self,palavra,string):#retorna a posicao na string em que deve ser inserido os filhos do nó pai
+        a = [m.start() for m in re.finditer(palavra+",(",string)]
+        a = a[::-1]
+        if len(a)==0:
+            return string.find(palavra)
+        for i in a:
+            print(i)
+            if(k[i-1]!=")"):
+                return i
+        
     def mostraArvore(self,ks=";"):#passa todos as arestas para exibir a árvore
         t = Tree(ks,format=1)
         ts = TreeStyle()
@@ -91,10 +104,11 @@ def matrizNaTelaUpdate(mat):
     entrada7.insert(0,mat[2][0])
     entrada8.insert(0,mat[2][1])
     entrada9.insert(0,mat[2][2])
-    time.sleep(1)#para o programa nessa linha por 1,5 segundos
+    time.sleep(0.01)#para o programa nessa linha por 1,5 segundos
 
 def buscaEmProfundidade(mat,threadKill=False):#Completo (guardando estados visitados)
     k="" #arvore em string
+    nivel = 0 #guarda o nível atual da árvore
     arvore = Arvore() #Instancia a classe
     noNaoVisitado = [mat] #pilha já começa com o nó raiz
     flag = False #flag para exibir a árvore só uma vez
@@ -107,42 +121,56 @@ def buscaEmProfundidade(mat,threadKill=False):#Completo (guardando estados visit
         pai = noNaoVisitado.pop()#viu que matriz não era solução então tira da pilha
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
             print("ACHOU A SOLUÇÃO")
-            print("Quantidade na Pilha:",len(noNaoVisitado))
-            print("Quant de nós visitados",len(arvore.dicio))
+            print("A solução foi encontrada no nível: "+str(nivel)+" da árvore.")
             if(questao2):
                 pb.destroy()
             elif(not flag and questao1):#se a árvore ainda não foi exibida
                 arvore.mostraArvore(k)
             return
-        vetPossiveis = filhosPossiveis(pai) #retorna os filhos possíveis da raiz
-        shuffle(vetPossiveis)#embaralha os filhos
-        k=arvore.stringArvore(vetPossiveis,str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
-        #print(k)
-        for i in vetPossiveis:#percore os nós filhos de trás para frente
-            noNaoVisitado.append(i)#add todos nós filhos    
-            if len(noNaoVisitado)==250 and not flag and questao1: #mostra a arvore quando tem 250 nós na pilha
-                flag=True
-                arvore.mostraArvore(k)
-            if len(noNaoVisitado)>=42000:#se der mais de 42.000 nós na pilha já gera exception pois o programa vai travar e fechar
-                pb.destroy()
-                messagebox.showerror('Erro', 'Estouro de Pilha')
-                raise OverflowError
-                return
+        nivel+=1
+        vetPossiveis = filhosPossiveis(pai) #retorna os filhos possíveis do pai atual
+        random.shuffle(vetPossiveis)#embaralha os filhos
+        if(questao1):
+            k=arvore.stringArvore(vetPossiveis,str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
+        noNaoVisitado.append(vetPossiveis[0])#add nó filhos na pilha 
+        if nivel==50 and not flag and questao1: #mostra a arvore quando tá no nível 50
+            flag=True
+            arvore.mostraArvore(k)
         if(questao2):
             matrizNaTelaUpdate(pai)
-def buscaEmLargura(mat):#incompleto
-    arvore = Arvore(mat) #Instancia a classe e já cria o nó raiz
-    noNaoVisitado = [mat] #pilha já começa com o nó raiz
+def buscaEmLargura(mat,threadKill=False):#incompleto
+    arvore = Arvore() #Instancia a classe e já cria o nó raiz
+    noNaoVisitado = [mat] #fila já começa com o nó raiz
     flag = False #exibe a árvore só uma vez
     k=""
-    while(len(noNaoVisitado)>0):
-        if(np.array_equal(mat,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
+    while(len(noNaoVisitado)>0):#percorre a fila
+        try:
+            if(threadKill.wait(1)):
+                break
+        except:
+            pass
+        pai = noNaoVisitado[0]#primeiro da fila  
+        if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
             print("ACHOU A SOLUÇÃO")
             print("Quantidade na Pilha:",len(noNaoVisitado))
             print("Quant de nós visitados",len(arvore.dicio))
             if not(flag):#se a árvore ainda não foi exibida
                 mostraArvore(k)
-            return     
+            return
+        #for i in pai:
+        #    print(i)
+        #print("\n\n")
+        del(noNaoVisitado[0])#tira o nó pai da fila
+        vetPossiveis = filhosPossiveis(pai) #retorna os filhos possíveis do nó pai
+        if(questao1):
+            k=arvore.stringArvore(vetPossiveis,str(pai),k,'largura')#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
+        for b in vetPossiveis:
+            noNaoVisitado.append(b)#add todos nós filhos na fila
+            if len(noNaoVisitado)==20 and not flag and questao1: #mostra a arvore quando tem 250 nós na pilha
+                flag=True
+                arvore.mostraArvore(k)
+        if(questao2):
+            matrizNaTelaUpdate(pai)
     return
 def buscaHeuristica(mat):#incompleto
     return
@@ -166,6 +194,12 @@ def start():
             return
         buscaEmProfundidade(matrix)
     elif(str(escolha.get())=='largura'):
+        if(questao2):
+            threadKill = threading.Event()
+            thread=Thread(target=buscaEmLargura,args=(matrix,threadKill))#passa os parametros e a função para a thread
+            thread.start()
+            loadingStatus()
+            return
         buscaEmLargura(matrix)
     elif(str(escolha.get())=='heuristica'):
         buscaHeuristica(matrix)
