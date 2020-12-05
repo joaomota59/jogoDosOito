@@ -25,10 +25,10 @@ class Arvore: #classe para exibir a arvore
          if kw=="": #se for o nó raiz e seus filhos
               return aux+pai+";"
          posPai = -1 #possição do nó pai na durante a busca(valor default - poderia ser qualquer num)
-         if tipo == 'profundidade':
+         if tipo == 'profundidade' or tipo=='heuristica':
              posPai = kw.index(pai)#procura pelo começo o pai na string
          elif tipo == 'largura':
-             posPai = self.posString(pai,kw) 
+             posPai = kw.index(pai)#procura pelo começo o pai na string 
          return kw[:posPai] +aux+ kw[posPai:]#escreve os filhos na string do pai correspondente
 
     def posString(self,palavra,string):#retorna a posicao na string em que deve ser inserido os filhos do nó pai
@@ -106,7 +106,30 @@ def matrizNaTelaUpdate(mat):
     entrada9.insert(0,mat[2][2])
     time.sleep(0.01)#para o programa nessa linha por 1,5 segundos
 
-def buscaEmProfundidade(mat,threadKill=False):#Completo (guardando estados visitados)
+def somatorioMatriz(mat):#retorna o valor do somatorio da distancia relativa das peças para sua posição correta
+    matFinal = [['1','2','3'],['4','','5'],['6','7','8']]
+    somatorio = 0
+    for i in mat:
+        for j in i:
+            posAtual = encontraPosicao(mat,j)
+            posCerta = encontraPosicao(matFinal,j)
+            distDaPosicaoCerta = abs(posAtual[0]-posCerta[0]) + abs(posAtual[1]-posCerta[1])#Distância de Manhattan
+            somatorio+=distDaPosicaoCerta
+    return somatorio
+
+def menorSomatorio(filhos=[]):#vê qual filho tem o menor somatório
+    distanciasDosFilhos = []
+    for i in filhos:
+        distanciasDosFilhos.append(somatorioMatriz(i))
+    posVet = distanciasDosFilhos.index(min(distanciasDosFilhos))
+    return filhos[posVet] #retorna o filho que tem a menor distancia das peças
+    
+def printaMatriz(matrix):#printa a matriz que foi passada
+    for i in matrix:
+        print(i)
+    print()
+
+def buscaEmProfundidade(mat,threadKill=False):#Completo (não guarda estados visitados)
     k="" #arvore em string
     nivel = 0 #guarda o nível atual da árvore
     arvore = Arvore() #Instancia a classe
@@ -120,8 +143,7 @@ def buscaEmProfundidade(mat,threadKill=False):#Completo (guardando estados visit
             pass
         pai = noNaoVisitado.pop()#viu que matriz não era solução então tira da pilha
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
-            print("ACHOU A SOLUÇÃO")
-            print("A solução foi encontrada no nível: "+str(nivel)+" da árvore.")
+            messagebox.showinfo('Solução Encontrada',"A solução foi encontrada no nível: "+str(nivel)+" da árvore.")
             if(questao2):
                 pb.destroy()
             elif(not flag and questao1):#se a árvore ainda não foi exibida
@@ -138,7 +160,7 @@ def buscaEmProfundidade(mat,threadKill=False):#Completo (guardando estados visit
             arvore.mostraArvore(k)
         if(questao2):
             matrizNaTelaUpdate(pai)
-def buscaEmLargura(mat,threadKill=False):#incompleto
+def buscaEmLargura(mat,threadKill=False):#completo
     arvore = Arvore() #Instancia a classe e já cria o nó raiz
     noNaoVisitado = [mat] #fila já começa com o nó raiz
     flag = False #exibe a árvore só uma vez
@@ -152,28 +174,64 @@ def buscaEmLargura(mat,threadKill=False):#incompleto
         pai = noNaoVisitado[0]#primeiro da fila  
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
             print("ACHOU A SOLUÇÃO")
-            print("Quantidade na Pilha:",len(noNaoVisitado))
+            print("Quantidade na Fila:",len(noNaoVisitado))
             print("Quant de nós visitados",len(arvore.dicio))
-            if not(flag):#se a árvore ainda não foi exibida
-                mostraArvore(k)
+            if(questao2):
+                pb.destroy()
+            elif(not flag and questao1):#se a árvore ainda não foi exibida
+                arvore.mostraArvore(k)
             return
-        #for i in pai:
-        #    print(i)
-        #print("\n\n")
+        #printaMatriz(pai)
         del(noNaoVisitado[0])#tira o nó pai da fila
         vetPossiveis = filhosPossiveis(pai) #retorna os filhos possíveis do nó pai
         if(questao1):
             k=arvore.stringArvore(vetPossiveis,str(pai),k,'largura')#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
         for b in vetPossiveis:
             noNaoVisitado.append(b)#add todos nós filhos na fila
-            if len(noNaoVisitado)==20 and not flag and questao1: #mostra a arvore quando tem 250 nós na pilha
+            if len(noNaoVisitado)==8 and not flag and questao1: #mostra a arvore quando tem 250 nós na pilha
                 flag=True
                 arvore.mostraArvore(k)
         if(questao2):
             matrizNaTelaUpdate(pai)
     return
-def buscaHeuristica(mat):#incompleto
-    return
+
+
+
+def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiramente
+    arvore = Arvore() #Instancia a classe e já cria o nó raiz
+    k=""
+    visitados = [pai]
+    nivel = 0 #mostra o nível da árvore
+    while(True):
+        try:
+            if(threadKill.wait(1)):
+                break
+        except:
+            pass
+        #printaMatriz(pai)
+        if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
+            messagebox.showinfo('Solução Encontrada',"A solução foi encontrada no nível: "+str(nivel)+" da árvore.")
+            if(questao2):
+                pb.destroy()
+            elif(questao1):#exibe a árvore somente no quando acha a resposta
+                arvore.mostraArvore(k)
+            return
+        nivel+=1
+        vetPossiveis = []
+        for filho in filhosPossiveis(pai):
+            try:
+                visitados.index(filho)
+            except ValueError:
+                vetPossiveis.append(filho)
+                visitados.append(filho)
+        if(vetPossiveis == []):
+            messagebox.showwarning('Solução Inválida', 'Não foi encontrada uma solução para a matriz de entrada')
+            return
+        if(questao1):
+            k=arvore.stringArvore(vetPossiveis,str(pai),k,'heuristica')#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
+        pai = menorSomatorio(vetPossiveis) #retorna os filho com as peças menos distantes da matriz correta e atribui como pai da vez
+        if(questao2):
+            matrizNaTelaUpdate(pai)
 def A(mat):#incompleto
     return
 
@@ -202,6 +260,12 @@ def start():
             return
         buscaEmLargura(matrix)
     elif(str(escolha.get())=='heuristica'):
+        if(questao2):
+            threadKill = threading.Event()
+            thread=Thread(target=buscaHeuristica,args=(matrix,threadKill))#passa os parametros e a função para a thread
+            thread.start()
+            loadingStatus()
+            return
         buscaHeuristica(matrix)
     elif(str(escolha.get())=='A'):
         A(matrix)
@@ -242,11 +306,11 @@ def telaHome():
     escolha.set(1)
     escolha1 = ttk.Radiobutton(window,text='Busca em Profundidade', value='profundidade' ,cursor="hand2",variable = escolha)
     escolha2= ttk.Radiobutton(window,text='Busca em Largura', value='largura', cursor="hand2",variable = escolha)
-    escolha3 = ttk.Radiobutton(window,text='Busca Heurística', value='heuristica', cursor="hand2",variable = escolha)
+    escolha3 = ttk.Radiobutton(window,text='Busca Heurística - Alg Guloso', value='heuristica', cursor="hand2",variable = escolha)
     escolha4 = ttk.Radiobutton(window,text='Busca A*', value='A', cursor="hand2",variable = escolha)
     escolha1.pack(padx=(0,0))
     escolha2.pack(padx=(0,33))
-    escolha3.pack(padx=(0,39))
+    escolha3.pack(padx=(30,0))
     escolha4.pack(padx=(0,79))
     botao = ttk.Button(window, text="Começar", command=start,cursor="hand2")
     botao.pack()
