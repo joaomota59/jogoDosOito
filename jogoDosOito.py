@@ -26,16 +26,12 @@ class Arvore: #classe para exibir a arvore
               return aux+pai+";"
          posPai = kw.index(pai) #possição do nó pai na string
          return kw[:posPai] +aux+ kw[posPai:]#escreve os filhos na string do pai correspondente
-
-    def posString(self,palavra,string):#retorna a posicao na string em que deve ser inserido os filhos do nó pai
-        a = [m.start() for m in re.finditer(palavra+",(",string)]
-        a = a[::-1]
-        if len(a)==0:
-            return string.find(palavra)
-        for i in a:
-            print(i)
-            if(k[i-1]!=")"):
-                return i
+    def nivelDoNo(self,pai=[[],[],[]],k=""):#retorna o nível do nó dada a string de árvore k
+        if k=="":
+            return 0 #nível 0
+        pai = str(pai).replace("], [","*").replace("[","").replace("]","").replace(",",' ')
+        posPai = k.find(pai)#econtra a posicao do pai na string
+        return k[posPai:].count(")") - k[posPai:].count("(") 
         
     def mostraArvore(self,ks=";"):#passa todos as arestas para exibir a árvore
         t = Tree(ks,format=1)
@@ -263,12 +259,7 @@ def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiram
             matrizNaTelaUpdate(pai)
 
 
-def nivelDoNo(pai=[[],[],[]],k=""):#retorna o nível do nó dada a string de árvore k
-    if k=="":
-        return 0 #nível 0
-    pai = str(pai).replace("], [","*").replace("[","").replace("]","").replace(",",' ')
-    posPai = k.find(pai)#econtra a posicao do pai na string
-    return k[posPai:].count(")") - k[posPai:].count("(") 
+
     
 
 def A(pai,threadKill=False):#completo
@@ -301,7 +292,7 @@ def A(pai,threadKill=False):#completo
         quantNos+=1
         vetPossiveis = []#são os filhos possiveis, não repetidos, que podem colocar como arestas com seu nó pai
         auxFilhos = filhosPossiveis(pai)
-        g = nivelDoNo(pai,k)+1
+        g = arvore.nivelDoNo(pai,k)+1
         for filho in auxFilhos:
             if( str(aberto.values()).find(str(filho))==-1 and str(fechado.values()).find(str(filho))==-1):#verifica se o filho não está em aberto e nem em fechado
                     vetPossiveis.append(filho)
