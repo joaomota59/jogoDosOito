@@ -26,7 +26,8 @@ class Arvore: #classe para exibir a arvore
               return aux+pai+";"
          posPai = kw.index(pai) #possição do nó pai na string
          return kw[:posPai] +aux+ kw[posPai:]#escreve os filhos na string do pai correspondente
-    def nivelDoNo(self,pai=[[],[],[]],k=""):#retorna o nível do nó dada a string de árvore k
+
+    def nivelDoNo(self,pai,k=""):#retorna o nível do nó dada a string de árvore k
         if k=="":
             return 0 #nível 0
         pai = str(pai).replace("], [","*").replace("[","").replace("]","").replace(",",' ')
@@ -47,8 +48,7 @@ class Arvore: #classe para exibir a arvore
         ts.rotation = 90#exibir árvore na vertical
         t.show(tree_style=ts)#mostra árvore
 
-def encontraParidade(matrix):#retorna a paridade da matrix(se é possível ou não resolve-lá)
-    aux = []
+def encontraParidade(matrix):#retorna a paridade da matrix(se é possível ou não resolvê-la)
     k=""
     for i in matrix:#coloca tds numeros da matrix em uma string
         for j in i:
@@ -148,6 +148,7 @@ def buscaEmProfundidade(mat,threadKill=False):#Completo (não guarda estados vis
     arvore = Arvore() #Instancia a classe
     noNaoVisitado = [mat] #pilha já começa com o nó raiz
     flag = False #flag para exibir a árvore só uma vez
+    custoDeEspaco = 0 #numero de filhos não expandidos
     while(len(noNaoVisitado)>0): #Enquanto tiver nós na pilha
         try:
             if(threadKill.wait(1)):
@@ -158,7 +159,10 @@ def buscaEmProfundidade(mat,threadKill=False):#Completo (não guarda estados vis
         if(questao2):
             matrizNaTelaUpdate(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
-            messagebox.showinfo('Solução Encontrada',"A solução foi encontrada no nível: "+str(nivel)+" da árvore.")
+            messagebox.showinfo('Busca em Profundidade - Solução Encontrada',"A solução foi encontrada!\n"+
+                                 "Custo do Caminho: "+str(nivel)+"\n"+
+                                 "Custo de Espaço: "+str(custoDeEspaco)+"\n"+
+                                 "Custo de Tempo: "+str(nivel+1)) #nivel + 1 pois conta com o nó raiz
             if(questao2):
                 pb.destroy()
             elif(not flag and questao1):#se a árvore ainda não foi exibida
@@ -166,6 +170,7 @@ def buscaEmProfundidade(mat,threadKill=False):#Completo (não guarda estados vis
             return
         nivel+=1
         vetPossiveis = filhosPossiveis(pai) #retorna os filhos possíveis do pai atual
+        custoDeEspaco+= len(vetPossiveis)-1 #todos os filhos gerados tirando o filho que vai ser expandido
         shuffle(vetPossiveis)#embaralha os filhos
         if(questao1):
             k=arvore.stringArvore(vetPossiveis,str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
@@ -175,29 +180,34 @@ def buscaEmProfundidade(mat,threadKill=False):#Completo (não guarda estados vis
             arvore.mostraArvore(k)
 
 
-def buscaEmLargura(mat,threadKill=False):#completo
-    if not(encontraParidade(mat)): #verifica se a matriz não pode ser resolvida
+def buscaEmLargura(pai,threadKill=False):#incompleto falta arrumar nível
+    if not(encontraParidade(pai)): #verifica se a matriz não pode ser resolvida
         messagebox.showwarning('Impossível','Impossível Resolver.\nTente com outra entrada!')
         if(questao2):
                 pb.destroy()
         return
     arvore = Arvore() #Instancia a classe e já cria o nó raiz
-    noNaoVisitado = [mat] #fila já começa com o nó raiz
+    noNaoVisitado = [pai] #fila já começa com o nó raiz
     flag = False #exibe a árvore só uma vez
     k=""
+    custoDeTempo = 0 #numero de pais que foram expandidos
     while(len(noNaoVisitado)>0):#percorre a fila
         try:
             if(threadKill.wait(1)):
                 break
         except:
             pass
+
         pai = noNaoVisitado[0]#primeiro da fila
+        nivel = arvore.nivelDoNo(pai,k) #nível atual do nó corrente
+        custoDeTempo+=1
         if(questao2):
             matrizNaTelaUpdate(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
-            print("ACHOU A SOLUÇÃO")
-            print("Quantidade na Fila:",len(noNaoVisitado))
-            print("Quant de nós visitados",len(arvore.dicio))
+            messagebox.showinfo('Busca em Largura - Solução Encontrada',"A solução foi encontrada!\n"+
+                                 "Custo do Caminho: "+str(nivel)+"\n"+
+                                 "Custo de Espaço: "+str(len(noNaoVisitado))+"\n"+
+                                 "Custo de Tempo: "+str(custoDeTempo)) #nivel + 1 pois conta com o nó raiz
             if(questao2):
                 pb.destroy()
             elif(not flag and questao1):#se a árvore ainda não foi exibida
@@ -223,10 +233,12 @@ def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiram
         if(questao2):
                 pb.destroy()
         return
+    custoDeEspaco = 0 #numero de filhos não expandidos
     arvore = Arvore() #Instancia a classe e já cria o nó raiz
     k=""
     visitados = [pai]
     nivel = 0 #mostra o nível da árvore
+    
     while(True):
         try:
             if(threadKill.wait(1)):
@@ -235,7 +247,10 @@ def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiram
             pass
         #printaMatriz(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
-            messagebox.showinfo('Solução Encontrada',"A solução foi encontrada no nível: "+str(nivel)+" da árvore.")
+            messagebox.showinfo('Busca Gulosa - Solução Encontrada',"A solução foi encontrada!\n"+
+                                 "Custo do Caminho: "+str(nivel+1)+"\n"+
+                                 "Custo de Espaço: "+str(custoDeEspaco)+"\n"+
+                                 "Custo de Tempo: "+str(nivel+1)) #nivel + 1 pois conta com o nó raiz
             if(questao2):
                 pb.destroy()
             elif(questao1):#exibe a árvore somente no quando acha a resposta
@@ -249,6 +264,7 @@ def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiram
             except ValueError:
                 vetPossiveis.append(filho)
                 visitados.append(filho)
+        custoDeEspaco+= len(vetPossiveis)-1 #todos os filhos gerados tirando o filho que vai ser expandido
         if(vetPossiveis == []):
             messagebox.showwarning('Solução Inválida', 'Não foi encontrada uma solução para a matriz de entrada')
             return
@@ -274,22 +290,24 @@ def A(pai,threadKill=False):#completo
     quantNos = 0#quantidade de nós expandidos
     aberto = {}
     fechado = {0 + somatorioMatriz(pai) : [pai]}#matriz : matriz,f(n) = g(n)+h(n) #guarda os nós já expandidos
+    custoDeEspaco = 0#quantidade de nós abertos
     while(True):
         try:
             if(threadKill.wait(1)):
                 break
         except:
             pass
-        #printaMatriz(pai)
+        printaMatriz(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
-            messagebox.showinfo('Solução Encontrada',"A solução foi encontrada!\nForam expandidos "+str(quantNos)+
-                                " nós!\nA profundidade da solução se encontra no nível "+str(g)+" da árvore.")
+            messagebox.showinfo('Solução Encontrada',"Custo do Caminho: "+str(g)+"\n"+
+                                "Custo do espaço:"+str(custoDeEspaco)+"\n"+
+                                "Custo do tempo: "+str(quantNos+1))
             if(questao2):
                 pb.destroy()
             elif(questao1):#exibe a árvore somente no quando acha a resposta
                 arvore.mostraArvore(k)
             return
-        quantNos+=1
+        quantNos+=1#quantidade na lista fechada
         vetPossiveis = []#são os filhos possiveis, não repetidos, que podem colocar como arestas com seu nó pai
         auxFilhos = filhosPossiveis(pai)
         g = arvore.nivelDoNo(pai,k)+1
@@ -297,11 +315,15 @@ def A(pai,threadKill=False):#completo
             if( str(aberto.values()).find(str(filho))==-1 and str(fechado.values()).find(str(filho))==-1):#verifica se o filho não está em aberto e nem em fechado
                     vetPossiveis.append(filho)
                     f = g + somatorioMatriz(filho) #manhatham do filho para a raiz + manhatham do filho para o objetivo
+                    print(g,somatorioMatriz(filho))
                     try:
                         aberto[f].append(filho) # se for a primeira matriz para aquela chave(f(n))
                     except:
                         aberto[f] = [filho]
-        k=arvore.stringArvore(vetPossiveis[::-1],str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)     
+        custoDeEspaco+= len(vetPossiveis)-1 #todos os filhos gerados tirando o filho que vai ser expandido
+        print("\n\n")
+        if(len(vetPossiveis)!=0):#se tiver vetor para adicionar na arvore
+            k=arvore.stringArvore(vetPossiveis[::-1],str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
         menorGlobal = min(aberto)
         pai = aberto[menorGlobal][0] #pega os filhos que tem os menores valores globais e escolhe o primeiro filho, dentre estes, para expandir
         del(aberto[menorGlobal][0])
