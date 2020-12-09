@@ -187,10 +187,11 @@ def buscaEmLargura(pai,threadKill=False):#incompleto falta arrumar nível
                 pb.destroy()
         return
     arvore = Arvore() #Instancia a classe e já cria o nó raiz
+    visitados = [pai]#estados visitados
     noNaoVisitado = [pai] #fila já começa com o nó raiz
     flag = False #exibe a árvore só uma vez
     k=""
-    custoDeTempo = 0 #numero de pais que foram expandidos
+    custoTempo = 0
     while(len(noNaoVisitado)>0):#percorre a fila
         try:
             if(threadKill.wait(1)):
@@ -200,29 +201,36 @@ def buscaEmLargura(pai,threadKill=False):#incompleto falta arrumar nível
 
         pai = noNaoVisitado[0]#primeiro da fila
         nivel = arvore.nivelDoNo(pai,k) #nível atual do nó corrente
-        custoDeTempo+=1
         if(questao2):
             matrizNaTelaUpdate(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
+            nivelNo = arvore.nivelDoNo(pai,k)
             messagebox.showinfo('Busca em Largura - Solução Encontrada',"A solução foi encontrada!\n"+
-                                 "Custo do Caminho: "+str(nivel)+"\n"+
+                                 "Custo do Caminho: "+str(nivelNo)+"\n"+
                                  "Custo de Espaço: "+str(len(noNaoVisitado))+"\n"+
-                                 "Custo de Tempo: "+str(custoDeTempo)) #nivel + 1 pois conta com o nó raiz
+                                 "Custo de Tempo: "+str(custoTempo)) #caminho: quant de nós até a solucao #tempo: quantidade de nós expandidos(pais)
             if(questao2):
                 pb.destroy()
             elif(not flag and questao1):#se a árvore ainda não foi exibida
                 arvore.mostraArvore(k)
             return
         #printaMatriz(pai)
+        custoTempo+=1
         del(noNaoVisitado[0])#tira o nó pai da fila
-        vetPossiveis = filhosPossiveis(pai) #retorna os filhos possíveis do nó pai
-        if(questao1):
+        vetPossiveis = []  #retorna os filhos possíveis do nó pai
+        for b in filhosPossiveis(pai)[::-1]:
+            try:
+                visitados.index(b)
+                
+            except ValueError:#se não foi visitado
+                vetPossiveis.append(b)#filhos não repetidos
+                noNaoVisitado.append(b)#add os filhos não visitados na fila
+                visitados.append(b)
+                if len(noNaoVisitado)==150 and not flag and questao1: #mostra a arvore quando tem 100 nós na fila
+                    flag=True
+                    arvore.mostraArvore(k)
+        if (len(vetPossiveis)!=0): #se tiver filho para adicionar na árvore então...
             k=arvore.stringArvore(vetPossiveis,str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
-        for b in vetPossiveis:
-            noNaoVisitado.append(b)#add todos nós filhos na fila
-            if len(noNaoVisitado)==8 and not flag and questao1: #mostra a arvore quando tem 250 nós na pilha
-                flag=True
-                arvore.mostraArvore(k)
     return
 
 
@@ -248,7 +256,7 @@ def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiram
         #printaMatriz(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
             messagebox.showinfo('Busca Gulosa - Solução Encontrada',"A solução foi encontrada!\n"+
-                                 "Custo do Caminho: "+str(nivel+1)+"\n"+
+                                 "Custo do Caminho: "+str(nivel)+"\n"+
                                  "Custo de Espaço: "+str(custoDeEspaco)+"\n"+
                                  "Custo de Tempo: "+str(nivel+1)) #nivel + 1 pois conta com o nó raiz
             if(questao2):
@@ -270,7 +278,7 @@ def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiram
             return
         if(questao1):
             k=arvore.stringArvore(vetPossiveis,str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
-        pai = menorSomatorio(vetPossiveis) #retorna os filho com as peças menos distantes da matriz correta e atribui como pai da vez
+        pai = menorSomatorio(vetPossiveis) #retorna o filho com as peças menos distantes da matriz correta e atribui como pai da vez
         if(questao2):
             matrizNaTelaUpdate(pai)
 
@@ -297,7 +305,7 @@ def A(pai,threadKill=False):#completo
                 break
         except:
             pass
-        printaMatriz(pai)
+        #printaMatriz(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
             messagebox.showinfo('Solução Encontrada',"Custo do Caminho: "+str(g)+"\n"+
                                 "Custo do espaço:"+str(custoDeEspaco)+"\n"+
@@ -315,13 +323,11 @@ def A(pai,threadKill=False):#completo
             if( str(aberto.values()).find(str(filho))==-1 and str(fechado.values()).find(str(filho))==-1):#verifica se o filho não está em aberto e nem em fechado
                     vetPossiveis.append(filho)
                     f = g + somatorioMatriz(filho) #manhatham do filho para a raiz + manhatham do filho para o objetivo
-                    print(g,somatorioMatriz(filho))
                     try:
                         aberto[f].append(filho) # se for a primeira matriz para aquela chave(f(n))
                     except:
                         aberto[f] = [filho]
         custoDeEspaco+= len(vetPossiveis)-1 #todos os filhos gerados tirando o filho que vai ser expandido
-        print("\n\n")
         if(len(vetPossiveis)!=0):#se tiver vetor para adicionar na arvore
             k=arvore.stringArvore(vetPossiveis[::-1],str(pai),k)#função que auxilia para criar a arvore (cria todas aresta possíveis com o nó pai)
         menorGlobal = min(aberto)
@@ -418,6 +424,10 @@ def telaHome():#reset
     entrada9 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
     entrada9.grid(row=2,column=2)
 
+    #nextButton
+    nextButton = ttk.Button(jogoDosOito, text="▶",width=5)
+    nextButton.grid(row=1,column=3)
+    
     #radioButtons:
     mensagemAlg = Label(window, text="Selecione um algoritmo de busca: ", font="arial 12 bold")
     mensagemAlg.pack()
