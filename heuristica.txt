@@ -1,0 +1,21 @@
+function heuristica(matriz){
+   let somatorio = 0
+   matriz.map((lista,i) => {
+       lista.map((item, j) => {
+           for(let k in obj){
+                if(item.toString() === k.toString() && item !== 0){  
+                    console.log(`${item} ${[i, matriz[i].indexOf(item)].toString()} DEVERIA - ${obj[k]} - `)
+                    let esta = (i*3+matriz[i].indexOf(item));
+                    //console.log(`${item} ${matriz[i].indexOf(item)}`)
+                   // console.log(esta)
+                    let deveria = obj[k][0] * 3 + obj[k][1]
+                   // console.log(deveria)
+                    let dis = deveria - esta; 
+                    dis <= 0 ? dis*=-1 : dis;
+                    somatorio += dis; 
+                    console.log(`[${item}] está a ${dis} unidades`)
+                    
+                }
+           }
+       })
+   });
