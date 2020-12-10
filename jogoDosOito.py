@@ -118,8 +118,8 @@ def somatorioMatriz(mat,matFinal=[['1','2','3'],['4','','5'],['6','7','8']]):#re
     for i in mat:
         for j in i:
             if not (j==''):#não considera a movimentação da pedra branca
-                posAtual = encontraPosicao(mat,j)
-                posCerta = encontraPosicao(matFinal,j)
+                posAtual = encontraPosicao(mat,j)#(x,y) do pai atual
+                posCerta = encontraPosicao(matFinal,j)#(x,y) da matriz final
                 distDaPosicaoCerta = abs(posAtual[0]-posCerta[0]) + abs(posAtual[1]-posCerta[1])#Distância de Manhattan
                 somatorio+=distDaPosicaoCerta
     return somatorio
@@ -283,7 +283,6 @@ def buscaHeuristica(pai,threadKill=False):#completo #recebe o nó raiz primeiram
             matrizNaTelaUpdate(pai)
 
 
-
     
 
 def A(pai,threadKill=False):#completo
@@ -307,7 +306,7 @@ def A(pai,threadKill=False):#completo
             pass
         #printaMatriz(pai)
         if(np.array_equal(pai,[['1','2','3'],['4','','5'],['6','7','8']])): #Compara a matriz atual com a matriz de estado final
-            messagebox.showinfo('Solução Encontrada',"Custo do Caminho: "+str(g)+"\n"+
+            messagebox.showinfo('Busca A* Solução Encontrada',"Custo do Caminho: "+str(g)+"\n"+
                                 "Custo do espaço:"+str(custoDeEspaco)+"\n"+
                                 "Custo do tempo: "+str(quantNos+1))
             if(questao2):
@@ -395,7 +394,6 @@ def start():
     else:
         messagebox.showinfo('Algoritmo não selecionado.',"Escolha um método de busca antes de iniciar!")
         
-    
 
 
 def telaHome():#reset
@@ -423,10 +421,6 @@ def telaHome():#reset
     entrada8.grid(row=2,column=1)
     entrada9 = ttk.Entry(jogoDosOito, font="arial 15 bold",width=5)
     entrada9.grid(row=2,column=2)
-
-    #nextButton
-    nextButton = ttk.Button(jogoDosOito, text="▶",width=5)
-    nextButton.grid(row=1,column=3)
     
     #radioButtons:
     mensagemAlg = Label(window, text="Selecione um algoritmo de busca: ", font="arial 12 bold")
